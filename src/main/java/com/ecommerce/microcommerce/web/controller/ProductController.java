@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.web.bind.annotation.*;
@@ -15,8 +16,8 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.validation.Valid;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 @Api("API pour les opérations CRUD sur les produits.")
 
@@ -60,6 +61,31 @@ public class ProductController {
     public List<Product> testeDeRequetes(@PathVariable int prixLimit)
     {
         return productDao.findByPrixGreaterThan(400);
+    }
+
+    @GetMapping(value = "/AdminProduits")
+    public List<Integer> calculerMargeProduit() {
+        Iterable<Product> produits = productDao.findAll();
+        List<Integer> marges = new ArrayList<>();
+        int i = 0;
+        for (Product produit : produits) {
+            i = produit.getPrix() - produit.getPrixAchat();
+            marges.add(i);
+        }
+
+        return marges;
+    }
+
+    @GetMapping(value = "/TriePrduits")
+
+    public MappingJacksonValue listetrieProduits() {
+
+        Iterable<Product> produits = productDao.findAll(Sort.by("nom"));
+
+        MappingJacksonValue produitsFiltres = new MappingJacksonValue(produits);
+
+
+        return produitsFiltres;
     }
 
     @ApiOperation(value = "Ajoute un produit")
